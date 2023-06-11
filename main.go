@@ -8,18 +8,18 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
-	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 func main() {
-	conn, err := pgx.Connect(context.Background(), os.Getenv("DATABASE_URL"))
+	dbpool, err := pgxpool.New(context.Background(), os.Getenv("DATABASE_URL"))
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Unable to connect to database: %v\n", err)
+		fmt.Fprintf(os.Stderr, "Unable to create connection pool: %v\n", err)
 		os.Exit(1)
 	}
-	defer conn.Close(context.Background())
+	defer dbpool.Close()
 
-	_, err = conn.Exec(context.Background(), `
+	_, err = dbpool.Exec(context.Background(), `
 		CREATE TABLE IF NOT EXISTS qabz_bast (
 			lang TEXT PRIMARY KEY,
 			status TEXT NOT NULL
@@ -42,7 +42,7 @@ func main() {
 
 	r.Get("/en", func(w http.ResponseWriter, r *http.Request) {
 		var status string
-		err := conn.QueryRow(context.Background(), "SELECT status FROM qabz_bast WHERE lang = 'en'").Scan(&status)
+		err := dbpool.QueryRow(context.Background(), "SELECT status FROM qabz_bast WHERE lang = 'en'").Scan(&status)
 		if err != nil {
 			http.Error(w, "Failed to retrieve status", 500)
 			return
@@ -54,7 +54,7 @@ func main() {
 
 	r.Get("/fa", func(w http.ResponseWriter, r *http.Request) {
 		var status string
-		err := conn.QueryRow(context.Background(), "SELECT status FROM qabz_bast WHERE lang = 'en'").Scan(&status)
+		err := dbpool.QueryRow(context.Background(), "SELECT status FROM qabz_bast WHERE lang = 'en'").Scan(&status)
 		if err != nil {
 			http.Error(w, "Failed to retrieve status", 500)
 			return
@@ -70,14 +70,14 @@ func main() {
 	})
 
 	r.With(BasicAuth).Post("/poke", func(w http.ResponseWriter, r *http.Request) {
-		_, err := conn.Exec(context.Background(), "UPDATE qabz_bast SET status = (CASE WHEN status = 'qabż' THEN 'basṭ' ELSE 'qabż' END) WHERE lang = 'en'")
+		_, err := dbpool.Exec(context.Background(), "UPDATE qabz_bast SET status = (CASE WHEN status = 'qabż' THEN 'basṭ' ELSE 'qabż' END) WHERE lang = 'en'")
 		if err != nil {
 			http.Error(w, "Failed to update status", 500)
 			return
 		}
 
 		var status string
-		err = conn.QueryRow(context.Background(), "SELECT status FROM qabz_bast WHERE lang = 'en'").Scan(&status)
+		err = dbpool.QueryRow(context.Background(), "SELECT status FROM qabz_bast WHERE lang = 'en'").Scan(&status)
 		if err != nil {
 			http.Error(w, "Failed to retrieve status", 500)
 			return
