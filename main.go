@@ -12,14 +12,14 @@ import (
 )
 
 func main() {
-	dbpool, err := pgxpool.New(context.Background(), os.Getenv("DATABASE_URL"))
+	dbPool, err := pgxpool.New(context.Background(), os.Getenv("DATABASE_URL"))
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Unable to create connection pool: %v\n", err)
 		os.Exit(1)
 	}
-	defer dbpool.Close()
+	defer dbPool.Close()
 
-	_, err = dbpool.Exec(context.Background(), `
+	_, err = dbPool.Exec(context.Background(), `
 		CREATE TABLE IF NOT EXISTS qabz_bast (
 			lang TEXT PRIMARY KEY,
 			status TEXT NOT NULL
@@ -42,7 +42,7 @@ func main() {
 
 	r.Get("/en", func(w http.ResponseWriter, r *http.Request) {
 		var status string
-		err := dbpool.QueryRow(context.Background(), "SELECT status FROM qabz_bast WHERE lang = 'en'").Scan(&status)
+		err := dbPool.QueryRow(context.Background(), "SELECT status FROM qabz_bast WHERE lang = 'en'").Scan(&status)
 		if err != nil {
 			http.Error(w, "Failed to retrieve status", 500)
 			return
@@ -54,7 +54,7 @@ func main() {
 
 	r.Get("/fa", func(w http.ResponseWriter, r *http.Request) {
 		var status string
-		err := dbpool.QueryRow(context.Background(), "SELECT status FROM qabz_bast WHERE lang = 'en'").Scan(&status)
+		err := dbPool.QueryRow(context.Background(), "SELECT status FROM qabz_bast WHERE lang = 'en'").Scan(&status)
 		if err != nil {
 			http.Error(w, "Failed to retrieve status", 500)
 			return
@@ -70,14 +70,14 @@ func main() {
 	})
 
 	r.With(BasicAuth).Post("/poke", func(w http.ResponseWriter, r *http.Request) {
-		_, err := dbpool.Exec(context.Background(), "UPDATE qabz_bast SET status = (CASE WHEN status = 'qabż' THEN 'basṭ' ELSE 'qabż' END) WHERE lang = 'en'")
+		_, err := dbPool.Exec(context.Background(), "UPDATE qabz_bast SET status = (CASE WHEN status = 'qabż' THEN 'basṭ' ELSE 'qabż' END) WHERE lang = 'en'")
 		if err != nil {
 			http.Error(w, "Failed to update status", 500)
 			return
 		}
 
 		var status string
-		err = dbpool.QueryRow(context.Background(), "SELECT status FROM qabz_bast WHERE lang = 'en'").Scan(&status)
+		err = dbPool.QueryRow(context.Background(), "SELECT status FROM qabz_bast WHERE lang = 'en'").Scan(&status)
 		if err != nil {
 			http.Error(w, "Failed to retrieve status", 500)
 			return
