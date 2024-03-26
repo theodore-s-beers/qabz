@@ -98,7 +98,7 @@ func BasicAuth(next http.Handler) http.Handler {
 		user, pass, ok := r.BasicAuth()
 
 		if !ok || user != "soroush" || pass != os.Getenv("SUPER_SECRET_KEY") {
-			http.Error(w, "Begone, infidel", 401)
+			http.Error(w, "Begone, infidel", http.StatusUnauthorized)
 			return
 		}
 
