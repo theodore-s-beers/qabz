@@ -24,7 +24,10 @@ func main() {
 			lang TEXT PRIMARY KEY,
 			status TEXT NOT NULL
 		);
-		INSERT INTO qabz_bast (lang, status) VALUES ('en', 'qabż') ON CONFLICT (lang) DO NOTHING
+
+		INSERT INTO qabz_bast (lang, status)
+		VALUES ('en', 'qabż')
+		ON CONFLICT (lang) DO NOTHING;
 	`)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Unable to create table: %v\n", err)
@@ -42,7 +45,7 @@ func main() {
 
 	r.Get("/en", func(w http.ResponseWriter, r *http.Request) {
 		var status string
-		err := dbPool.QueryRow(context.Background(), "SELECT status FROM qabz_bast WHERE lang = 'en'").Scan(&status)
+		err := dbPool.QueryRow(context.Background(), "SELECT status FROM qabz_bast WHERE lang = 'en';").Scan(&status)
 		if err != nil {
 			http.Error(w, "Failed to retrieve status", 500)
 			return
@@ -54,7 +57,7 @@ func main() {
 
 	r.Get("/fa", func(w http.ResponseWriter, r *http.Request) {
 		var status string
-		err := dbPool.QueryRow(context.Background(), "SELECT status FROM qabz_bast WHERE lang = 'en'").Scan(&status)
+		err := dbPool.QueryRow(context.Background(), "SELECT status FROM qabz_bast WHERE lang = 'en';").Scan(&status)
 		if err != nil {
 			http.Error(w, "Failed to retrieve status", 500)
 			return
@@ -70,14 +73,21 @@ func main() {
 	})
 
 	r.With(BasicAuth).Post("/poke", func(w http.ResponseWriter, r *http.Request) {
-		_, err := dbPool.Exec(context.Background(), "UPDATE qabz_bast SET status = (CASE WHEN status = 'qabż' THEN 'basṭ' ELSE 'qabż' END) WHERE lang = 'en'")
+		_, err := dbPool.Exec(context.Background(), `
+			UPDATE qabz_bast
+			SET status = ( CASE
+				WHEN status = 'qabż' THEN 'basṭ'
+				ELSE 'qabż'
+			END )
+			WHERE lang = 'en';
+		`)
 		if err != nil {
 			http.Error(w, "Failed to update status", 500)
 			return
 		}
 
 		var status string
-		err = dbPool.QueryRow(context.Background(), "SELECT status FROM qabz_bast WHERE lang = 'en'").Scan(&status)
+		err = dbPool.QueryRow(context.Background(), "SELECT status FROM qabz_bast WHERE lang = 'en';").Scan(&status)
 		if err != nil {
 			http.Error(w, "Failed to retrieve status", 500)
 			return
