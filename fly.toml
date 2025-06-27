@@ -1,14 +1,7 @@
-# fly.toml app configuration file generated for qabz on 2024-09-20T16:44:34-04:00
-#
-# See https://fly.io/docs/reference/configuration/ for information about how to use this file.
-#
+# See https://fly.io/docs/reference/configuration/
 
 app = "qabz"
 primary_region = "ewr"
-
-[build]
-builder = "paketobuildpacks/builder:base"
-buildpacks = ["gcr.io/paketo-buildpacks/go"]
 
 [env]
 PORT = "8080"
