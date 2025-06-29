@@ -1,7 +1,7 @@
 # See https://fly.io/docs/reference/configuration/
 
 app = "qabz"
-primary_region = "ewr"
+primary_region = "iad"
 
 [env]
 PORT = "8080"
