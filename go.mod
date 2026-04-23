@@ -6,7 +6,7 @@ toolchain go1.25.4
 
 require (
 	github.com/go-chi/chi/v5 v5.2.5
-	github.com/jackc/pgx/v5 v5.9.1
+	github.com/jackc/pgx/v5 v5.9.2
 )
 
 require (
